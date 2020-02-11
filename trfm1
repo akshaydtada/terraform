@@ -1,4 +1,23 @@
 ## terraform template to create a instance in gcp cloud
+## save project credential file in json format
+## id_rsa.pub in directory to 
+// Configure the Google Cloud provider
+provider "google" {
+ credentials = "${file("CREDENTIAL_FILE.json")}"
+ project     = "terraform-267810"
+ region      = "us-west1"
+}
+
+resource "google_compute_instance" "default" {
+  name         = "test"
+  machine_type = "n1-standard-1"
+  zone         = "us-central1-a"
+
+  tags = ["foo", "bar"]
+
+  boot_disk {
+    initialize_params {
+      image = "ubuntu-os-cloud/ubuntu-1604-lts"
 
       size  = "20"
       type  = "pd-ssd"
@@ -27,7 +46,18 @@
   }
 
 }
+}
 
+resource "google_compute_attached_disk" "default" {
+  disk     = google_compute_disk.default.self_link
+  instance = google_compute_instance.default.self_link
+}
+
+
+resource "google_compute_attached_disk" "default" {
+  disk     = google_compute_disk.default.self_link
+  instance = google_compute_instance.default.self_link
+}
 resource "google_compute_disk" "default" {
   name  = "test-new-disk"
   type  = "pd-ssd"
