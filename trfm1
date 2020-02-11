@@ -1,0 +1,45 @@
+## terraform template to create a instance in gcp cloud
+
+      size  = "20"
+      type  = "pd-ssd"
+    }
+  }
+
+  // Local SSD disk
+  scratch_disk {
+    interface = "SCSI"
+  }
+
+  network_interface {
+    network = "default"
+
+    access_config {
+      // Ephemeral IP
+    }
+  }
+
+
+  metadata_startup_script = "echo hi > /test.txt"
+
+ metadata = {
+    ssh-keys = "ubuntu:${file("id_rsa.pub")}"
+    foo = "bar"
+  }
+
+}
+
+resource "google_compute_disk" "default" {
+  name  = "test-new-disk"
+  type  = "pd-ssd"
+  zone  = "us-central1-a"
+  image = "ubuntu-os-cloud/ubuntu-1604-lts"
+  labels = {
+    environment = "dev"
+  }
+  physical_block_size_bytes = 4096
+}
+
+resource "google_compute_attached_disk" "default" {
+  disk     = google_compute_disk.default.self_link
+  instance = google_compute_instance.default.self_link
+}
